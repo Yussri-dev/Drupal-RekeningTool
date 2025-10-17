@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>CVB Voederwaarde – Calculator</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm"></script>
+    <link rel="stylesheet" href="./Styles/style.css">
+    <script type="module" src="./scripts/script.js"></script>
+</head>
+
+<body>
+
+    <h2>CVB Voederwaarde</h2>
+
+    <div class="panel">
+        <div id="wurInfo">
+        <label><strong>Kies een WUR-datum:</strong></label>
+        <select id="dateSelect"></select>
+
+            <div class="wur-box kvem">
+                <strong>kVEM:</strong> <span id="kVEMVal">–</span> c€
+            </div>
+            <div class="wur-box dve-melk">
+                <strong>DVE (Melk):</strong> <span id="DVE_melkVal">–</span> c€
+            </div>
+            <div class="wur-box kvevi">
+                <strong>kVEVI:</strong> <span id="kVEVIVal">–</span> c€
+            </div>
+            <div class="wur-box dve-vlees">
+                <strong>DVE (Vlees):</strong> <span id="DVE_vleesVal">–</span> c€
+            </div>
+        </div>
+    </div>
+
+
+    <div id="categoriesContainer"></div>
+
+</body>
+
+</html>
