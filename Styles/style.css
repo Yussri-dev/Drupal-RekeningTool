@@ -218,7 +218,7 @@ input[type="number"] {
 }
 
 /* Responsive tables */
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
     table,
     thead,
     tbody,
