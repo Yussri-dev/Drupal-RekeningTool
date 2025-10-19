@@ -1,24 +1,28 @@
-import axios from "axios";
-import * as cheerio from "cheerio";
-import fs from "fs";
+(async () => {
+    const axios = await import("axios");
+    const cheerio = await import("cheerio");
+    const fs = await import("fs");
 
-//Dummy Data to test if the json file updates Keys
-// const url = "http://127.0.0.1:5500/Wur_Test_For_Scrap.html";
-const url = "https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm";
-const outputPath = "wur_data_clean.json";
+    const axiosDefault = axios.default;
+    const cheerioModule = cheerio.default || cheerio;
+    const fsModule = fs.default || fs;
 
-async function scrapeWUR() {
+    const url = "https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm";
+    const outputPath = "wur_data_clean.json";
+
     try {
-        const { data: html } = await axios.get(url);
-        const $ = cheerio.load(html);
+        console.log("Fetching data from WUR...");
+        const { data: html } = await axiosDefault.get(url);
+        const $ = cheerioModule.load(html);
         const table = $("table").first();
 
         let oldData = {};
-        if (fs.existsSync(outputPath)) {
+        if (fsModule.existsSync(outputPath)) {
             try {
-                oldData = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+                oldData = JSON.parse(fsModule.readFileSync(outputPath, "utf8"));
+                console.log("Loaded existing data");
             } catch {
-                console.warn("error reading the file. New data Created.");
+                console.warn("Error reading the file. New data Created.");
             }
         }
 
@@ -29,7 +33,6 @@ async function scrapeWUR() {
             .filter(Boolean);
 
         const result = { ...oldData };
-
         const seen = {};
 
         table.find("tbody tr").each((i, row) => {
@@ -63,11 +66,11 @@ async function scrapeWUR() {
             });
         });
 
-        fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
-        console.log("Data Updated :", outputPath);
+        fsModule.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+        console.log("Data Updated:", outputPath);
+        process.exit(0);
     } catch (err) {
         console.error("Error:", err.message);
+        process.exit(1);
     }
-}
-
-scrapeWUR();
+})();
