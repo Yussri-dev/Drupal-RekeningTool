@@ -68,9 +68,17 @@
 
         fsModule.writeFileSync(outputPath, JSON.stringify(result, null, 2));
         console.log("Data Updated:", outputPath);
-        process.exit(0);
+
+        // Exit only if running as a CLI tool (batch file or direct node execution)
+        if (process.argv[1] && process.argv[1].includes("bundle")) {
+            process.exit(0);
+        }
     } catch (err) {
         console.error("Error:", err.message);
-        process.exit(1);
+
+        // Exit only if running as a CLI tool
+        if (process.argv[1] && process.argv[1].includes("bundle")) {
+            process.exit(1);
+        }
     }
 })();
