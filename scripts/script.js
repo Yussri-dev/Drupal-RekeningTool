@@ -178,9 +178,11 @@ function addProductRow(category, tbody) {
     const prodSelect = document.createElement("select");
     prodSelect.innerHTML = products.map(p => `<option>${p["Naam"]}</option>`).join("");
     const prodCell = document.createElement("td");
+    prodCell.setAttribute("data-label", "Product");
     prodCell.appendChild(prodSelect);
 
     const priceCell = document.createElement("td");
+    priceCell.setAttribute("data-label", "Reële prijs (€/ton)");
     const priceInput = document.createElement("input");
     priceInput.type = "number";
     priceInput.step = "1";
@@ -188,15 +190,25 @@ function addProductRow(category, tbody) {
     priceCell.appendChild(priceInput);
 
     const ds = document.createElement("td");
+    ds.setAttribute("data-label", "DS");
     const dve = document.createElement("td");
+    dve.setAttribute("data-label", "DVE");
     const vem = document.createElement("td");
+    vem.setAttribute("data-label", "VEM");
     const vevi = document.createElement("td");
+    vevi.setAttribute("data-label", "VEVI");
     const melk = document.createElement("td");
+    melk.setAttribute("data-label", "KWP Melk");
     const vlees = document.createElement("td");
+    vlees.setAttribute("data-label", "KWP Vlees");
+
     const pmelk = document.createElement("td");
+    pmelk.setAttribute("data-label", "Prijs/KWP Melk (%)");
     const pvlees = document.createElement("td");
+    pvlees.setAttribute("data-label", "Prijs/KWP Vlees (%)");
 
     const delCell = document.createElement("td");
+    delCell.setAttribute("data-label", "Verwijder");
     const delBtn = document.createElement("button");
     delBtn.className = "delete-btn";
     delBtn.innerHTML = "X";

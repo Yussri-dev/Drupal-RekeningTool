@@ -216,3 +216,61 @@ input[type="number"] {
     background-color: #f3f3f3;
     transform: scale(1.2);
 }
+
+/* Responsive tables */
+@media (max-width: 900px) {
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+    }
+
+    thead tr {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        padding: 8px;
+    }
+
+    td {
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 10px;
+        text-align: left;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    td:last-child {
+        border-bottom: none;
+    }
+
+    td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--accent);
+        flex: 1;
+        text-align: left;
+        padding-right: 10px;
+    }
+
+    td select,
+    td input {
+        width: 60%;
+        font-size: 0.95rem;
+    }
+
+    .add-btn {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+}
