@@ -13,6 +13,16 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.11",
-    "nexe": "^5.0.0-beta.4"
+    "esbuild-node-externals": "^1.18.0",
+    "nexe": "^5.0.0-beta.4",
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "scripts": [],
+    "targets": [
+      "node18-win"
+    ],
+    "output": "dist/wur-scraper.exe",
+    "compress": "Brotli"
   }
 }

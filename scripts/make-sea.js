@@ -5,58 +5,44 @@ import fs from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "../dist");
-const bundlePath = path.join(distDir, "bundle.cjs");
 const exePath = path.join(distDir, "wur-scraper.exe");
+const indexPath = path.join(__dirname, "../index.js");
 
 fs.mkdirSync(distDir, { recursive: true });
 
-console.log("Building bundle js...");
-execSync(
-    `esbuild index.js --bundle --platform=node --target=node22 --minify --outfile="${bundlePath}" --format=cjs`,
-    { stdio: "inherit" }
-);
-console.log("Bundle created Successfully");
-
-const nodeBinary = execSync("where node").toString().trim().split("\n")[0];
-console.log("Node binary:", nodeBinary);
-
-console.log("Creating executable wrapper...");
-fs.copyFileSync(nodeBinary, exePath);
-console.log("Executable wrapper created Succefully");
-
-const shimPath = path.join(distDir, "wur-scraper-shim.js");
-fs.writeFileSync(
-    shimPath,
-    `require('${bundlePath.replace(/\\/g, "\\\\")}');\n`
-);
-
-const batchPath = path.join(distDir, "wur-scraper.bat");
-fs.writeFileSync(
-    batchPath,
-    `@echo off\nnode "${bundlePath}" %*\nexit /b %errorlevel%\n`
-);
-console.log("Batch file created Successfully");
+console.log("Creating standalone .exe using pkg...");
+try {
+    execSync(`npx pkg "${indexPath}" -o "${exePath}" -t node18-win --compress Brotli --build`, {
+        stdio: "inherit",
+        cwd: path.join(__dirname, "..")
+    });
+    console.log("Executable created Successfully!");
+} catch (error) {
+    console.error("Error creating executable:", error.message);
+    process.exit(1);
+}
 
 const stats = fs.statSync(exePath);
-console.log("\n Executables created:");
-console.log("Batch file (recommended):", batchPath);
-console.log("   → Run: wur-scraper.bat");
-console.log("Node wrapper:", exePath);
-console.log("------- Run: node wur-scraper.exe");
+console.log("\nExecutable created:");
+console.log("File:", exePath);
 console.log("Size:", (stats.size / 1024 / 1024).toFixed(2), "MB");
 
 console.log("\nTesting...");
 const { spawnSync } = await import("child_process");
-const result = spawnSync("node", [bundlePath], {
+const result = spawnSync(exePath, [], {
     encoding: "utf-8",
     timeout: 30000,
     stdio: ["pipe", "pipe", "pipe"]
 });
 
 if (result.stdout) {
-    console.log("Test done successful!");
+    console.log("Test successful!");
     console.log(result.stdout);
 }
 
+if (result.error) {
+    console.error("Test failed:", result.error);
+}
+
 console.log("\nReady to use:");
-console.log(`   ${batchPath.split("\\").pop()}`);
+console.log(`   ${exePath}`);

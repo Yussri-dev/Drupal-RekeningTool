@@ -290,7 +290,7 @@ function addProductRow(category, tbody) {
         vlees.innerHTML = `<b>${kwpVlees}</b>`;
 
         const price = parseFloat(priceInput.value);
-        if (price) {
+        if (price > 0) {
             const percMelk = Math.round((price / kwpMelk) * 100);
             const percVlees = Math.round((price / kwpVlees) * 100);
             pmelk.innerHTML = `<span class="${percMelk < 100 ? "green" : "red"}">${percMelk}</span>`;
