@@ -25,7 +25,7 @@ async function loadWUR() {
     // Verschillende typen voor select
     const extra =
         [
-            "Jaargemiddelde",
+            "Jaargemiddelde (12 maanden)",
             "3-Maandsgemiddelde",
             "3-jaarsgemiddelde"
         ];
@@ -43,8 +43,24 @@ async function loadWUR() {
     showWUR(lastDate);
 }
 
-// Ik heb deze functie gemaakt om het gemiddelde
-//  van de laatste 3 jaren in een dataset te berekenen.
+function last12MonthsAverage(obj) {
+    const vals = Object.values(obj)
+        .map(Number)
+        .filter(v => !isNaN(v))
+        .slice(-12);
+
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+}
+
+function last3MonthsAverage(obj) {
+    const vals = Object.values(obj)
+        .map(Number)
+        .filter(v => !isNaN(v))
+        .slice(-3); 
+
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+}
+
 function threeYearAverage(obj) {
     const entries = Object.entries(obj)
         .map(([key, val]) => {
@@ -73,37 +89,23 @@ function threeYearAverage(obj) {
 
     const totalAvg = last3.reduce((sum, y) => sum + y.avg, 0) / last3.length;
 
-    return Math.round(totalAvg);
+    return totalAvg;
 }
 
 function showWUR(date) {
-
-    const avg = obj => {
-        const vals = Object.values(obj).map(Number).filter(v => !isNaN(v));
-        return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : NaN;
-    };
-
-    const last3Avg = obj => {
-        const vals = Object.values(obj)
-            .map(Number)
-            .filter(v => !isNaN(v))
-            .slice(-3);
-        return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : NaN;
-    };
-
     let kvem, dveMelk, kvevi, dveVlees;
 
-    if (date === "Jaargemiddelde") {
-        kvem = avg(wurData["kVEM2022"]);
-        dveMelk = avg(wurData["kg DVE-toeslag"]);
-        kvevi = avg(wurData["kVEVI"]);
-        dveVlees = avg(wurData["kg DVE-toeslag_2"]);
+    if (date === "Jaargemiddelde (12 maanden)") {
+        kvem = last12MonthsAverage(wurData["kVEM2022"]);
+        dveMelk = last12MonthsAverage(wurData["kg DVE-toeslag"]);
+        kvevi = last12MonthsAverage(wurData["kVEVI"]);
+        dveVlees = last12MonthsAverage(wurData["kg DVE-toeslag_2"]);
     }
     else if (date === "3-Maandsgemiddelde") {
-        kvem = last3Avg(wurData["kVEM2022"]);
-        dveMelk = last3Avg(wurData["kg DVE-toeslag"]);
-        kvevi = last3Avg(wurData["kVEVI"]);
-        dveVlees = last3Avg(wurData["kg DVE-toeslag_2"]);
+        kvem = last3MonthsAverage(wurData["kVEM2022"]);
+        dveMelk = last3MonthsAverage(wurData["kg DVE-toeslag"]);
+        kvevi = last3MonthsAverage(wurData["kVEVI"]);
+        dveVlees = last3MonthsAverage(wurData["kg DVE-toeslag_2"]);
     }
     else if (date === "3-jaarsgemiddelde") {
         kvem = threeYearAverage(wurData["kVEM2022"]);
@@ -118,10 +120,10 @@ function showWUR(date) {
         dveVlees = wurData["kg DVE-toeslag_2"][date];
     }
 
-    document.getElementById("kVEMVal").textContent = isNaN(kvem) ? "-" : Math.round(kvem);
-    document.getElementById("DVE_melkVal").textContent = isNaN(dveMelk) ? "-" : Math.round(dveMelk);
-    document.getElementById("kVEVIVal").textContent = isNaN(kvevi) ? "-" : Math.round(kvevi);
-    document.getElementById("DVE_vleesVal").textContent = isNaN(dveVlees) ? "-" : Math.round(dveVlees);
+    document.getElementById("kVEMVal").textContent = isNaN(kvem) ? "-" : kvem.toFixed(1).replace(".", ",");
+    document.getElementById("DVE_melkVal").textContent = isNaN(dveMelk) ? "-" : dveMelk.toFixed(1).replace(".", ",");
+    document.getElementById("kVEVIVal").textContent = isNaN(kvevi) ? "-" : kvevi.toFixed(1).replace(".", ",");
+    document.getElementById("DVE_vleesVal").textContent = isNaN(dveVlees) ? "-" : dveVlees.toFixed(1).replace(".", ",");
 }
 
 async function loadCVB() {
@@ -147,14 +149,14 @@ function buildCategorySection(catName) {
             <tr>
                 <th>Product</th>
                 <th>Reële prijs (€/ton)</th>
-                <th>KWP Melk</th>
-                <th>KWP Vlees</th>
+                <th>VWP Melk</th>
+                <th>VWP Vlees</th>
                 <th>DS</th>
                 <th>DVE</th>
                 <th>VEM</th>
                 <th>VEVI</th>
-                <th>Prijs/KWP Melk (%)</th>
-                <th>Prijs/KWP Vlees (%)</th>
+                <th>Prijs/VWP Melk (%)</th>
+                <th>Prijs/VWP Vlees (%)</th>
                 <th></th>
             </tr>
         </thead>
@@ -198,14 +200,16 @@ function addProductRow(category, tbody) {
     const vevi = document.createElement("td");
     vevi.setAttribute("data-label", "VEVI");
     const melk = document.createElement("td");
-    melk.setAttribute("data-label", "KWP Melk");
-    const vlees = document.createElement("td");
-    vlees.setAttribute("data-label", "KWP Vlees");
+    melk.setAttribute("data-label", "VWP Melk");
+    melk.classList.add("vwp-column");
 
+    const vlees = document.createElement("td");
+    vlees.setAttribute("data-label", "VWP Vlees");
+    vlees.classList.add("vwp-column");
     const pmelk = document.createElement("td");
-    pmelk.setAttribute("data-label", "Prijs/KWP Melk (%)");
+    pmelk.setAttribute("data-label", "Prijs/VWP Melk (%)");
     const pvlees = document.createElement("td");
-    pvlees.setAttribute("data-label", "Prijs/KWP Vlees (%)");
+    pvlees.setAttribute("data-label", "Prijs/VWP Vlees (%)");
 
     const delCell = document.createElement("td");
     delCell.setAttribute("data-label", "Verwijder");
@@ -235,29 +239,19 @@ function addProductRow(category, tbody) {
     function calc() {
         const date = document.getElementById("dateSelect").value;
 
-        const avg = obj => {
-            const vals = Object.values(obj).map(Number).filter(v => !isNaN(v));
-            return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : NaN;
-        };
-
-        const last3Avg = obj => {
-            const vals = Object.values(obj).map(Number).filter(v => !isNaN(v)).slice(-3);
-            return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : NaN;
-        };
-
         let kVEM, kVEVI, DVE_melk, DVE_vlees;
 
-        if (date === "Jaargemiddelde") {
-            kVEM = avg(wurData["kVEM2022"]);
-            DVE_melk = avg(wurData["kg DVE-toeslag"]);
-            kVEVI = avg(wurData["kVEVI"]);
-            DVE_vlees = avg(wurData["kg DVE-toeslag_2"]);
+        if (date === "Jaargemiddelde (12 maanden)") {
+            kVEM = last12MonthsAverage(wurData["kVEM2022"]);
+            DVE_melk = last12MonthsAverage(wurData["kg DVE-toeslag"]);
+            kVEVI = last12MonthsAverage(wurData["kVEVI"]);
+            DVE_vlees = last12MonthsAverage(wurData["kg DVE-toeslag_2"]);
         }
         else if (date === "3-Maandsgemiddelde") {
-            kVEM = last3Avg(wurData["kVEM2022"]);
-            DVE_melk = last3Avg(wurData["kg DVE-toeslag"]);
-            kVEVI = last3Avg(wurData["kVEVI"]);
-            DVE_vlees = last3Avg(wurData["kg DVE-toeslag_2"]);
+            kVEM = last3MonthsAverage(wurData["kVEM2022"]);
+            DVE_melk = last3MonthsAverage(wurData["kg DVE-toeslag"]);
+            kVEVI = last3MonthsAverage(wurData["kVEVI"]);
+            DVE_vlees = last3MonthsAverage(wurData["kg DVE-toeslag_2"]);
         }
         else if (date === "3-jaarsgemiddelde") {
             kVEM = threeYearAverage(wurData["kVEM2022"]);
@@ -300,7 +294,6 @@ function addProductRow(category, tbody) {
             pvlees.textContent = "";
         }
     }
-
 
     prodSelect.addEventListener("change", e => updateProductDetails(e.target.value));
     priceInput.addEventListener("input", calc);

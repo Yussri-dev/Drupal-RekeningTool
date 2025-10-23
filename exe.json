@@ -1,0 +1,14 @@
+{
+    "entry": "index.js",
+    "out": "./dist/wur-scraper.exe",
+    "version": "1.0.0",
+    "console": true,
+    "executionLevel": "asInvoker",
+    "minify": false,
+    "skipBundle": false,
+    "properties": {
+        "FileDescription": "WUR Data Scraper",
+        "ProductName": "WUR Scraper",
+        "OriginalFilename": "wur-scraper.exe"
+    }
+}

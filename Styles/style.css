@@ -219,6 +219,7 @@ input[type="number"] {
 
 /* Responsive tables */
 @media (max-width: 1200px) {
+
     table,
     thead,
     tbody,
@@ -273,4 +274,16 @@ input[type="number"] {
         font-size: 0.9rem;
         padding: 10px;
     }
+}
+
+table th,
+table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.vwp-column {
+    color: #017a0c;
+    font-weight: bold;
+    font-size: 1.05em;
 }

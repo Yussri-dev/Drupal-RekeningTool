@@ -1,28 +1,37 @@
-(async () => {
-    const axios = await import("axios");
-    const cheerio = await import("cheerio");
-    const fs = await import("fs");
+// @angablue-exe esm
+import axios from "axios";
+import * as cheerio from "cheerio";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-    const axiosDefault = axios.default;
-    const cheerioModule = cheerio.default || cheerio;
-    const fsModule = fs.default || fs;
+let __filename, __dirname;
+try {
+    __filename = fileURLToPath(import.meta.url);
+    __dirname = path.dirname(__filename);
+} catch {
+    __dirname = process.cwd();
+}
 
-    const url = "https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm";
-    const outputPath = "wur_data_clean.json";
+const url =
+    "https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm";
 
+const outputPath = path.join(__dirname, "wur_data_clean.json");
+
+async function scrapeData() {
     try {
         console.log("Fetching data from WUR...");
-        const { data: html } = await axiosDefault.get(url);
-        const $ = cheerioModule.load(html);
+        const { data: html } = await axios.get(url);
+        const $ = cheerio.load(html);
         const table = $("table").first();
 
         let oldData = {};
-        if (fsModule.existsSync(outputPath)) {
+        if (fs.existsSync(outputPath)) {
             try {
-                oldData = JSON.parse(fsModule.readFileSync(outputPath, "utf8"));
+                oldData = JSON.parse(fs.readFileSync(outputPath, "utf8"));
                 console.log("Loaded existing data");
             } catch {
-                console.warn("Error reading the file. New data Created.");
+                console.warn("Error reading the file. New data created.");
             }
         }
 
@@ -57,7 +66,8 @@
             headers.slice(1).forEach((date, idx) => {
                 let val = values[idx];
                 if (val === undefined) return;
-                if (val && /^[0-9]+,[0-9]+$/.test(val)) val = parseFloat(val.replace(",", "."));
+                if (val && /^[0-9]+,[0-9]+$/.test(val))
+                    val = parseFloat(val.replace(",", "."));
                 else if (val && /^[0-9]+$/.test(val)) val = parseFloat(val);
 
                 if (val !== null && result[key][date] !== val) {
@@ -66,19 +76,16 @@
             });
         });
 
-        fsModule.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+        fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
         console.log("Data Updated:", outputPath);
-
-        // Exit only if running as a CLI tool (batch file or direct node execution)
-        if (process.argv[1] && process.argv[1].includes("bundle")) {
-            process.exit(0);
-        }
+        process.exit(0);
     } catch (err) {
         console.error("Error:", err.message);
-
-        // Exit only if running as a CLI tool
-        if (process.argv[1] && process.argv[1].includes("bundle")) {
-            process.exit(1);
-        }
+        process.exit(1);
     }
-})();
+}
+
+scrapeData();
+
+// keep the process open briefly to show logs if double-clicked
+setTimeout(() => { }, 10000);
