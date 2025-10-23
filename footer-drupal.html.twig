@@ -1,0 +1,58 @@
+{% set wur_url =
+wur_url|default('https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm')
+%}
+{% set cvb_table_url = cvb_table_url|default('https://www.cvbdiervoeding.nl/pagina/10081/downloads.aspx') %}
+{% set cvb_tabellenboek_url =
+cvb_tabellenboek_url|default('https://www.cvbdiervoeding.nl/bestand/10942/tabellenboek-veevoeding-herkauwers-2025.pdf.ashx')
+%}
+{% set current_year = "now"|date("Y") %}
+
+<footer style="text-align:center; font-size:0.8rem; margin-top:2rem;">
+    <div>
+        <p>
+            Deze rekentool combineert de voederwaardeprijzen (VWP) van Wageningen
+            Livestock Research en de voederwaardes uit de CVB Veevoedertabel. Hierdoor kan
+            je voor een grote reeks voedermiddelen een voederwaardeprijs bepalen. Kies een
+            VWP op recente datum of een bepaalde periode en selecteer vervolgens een of
+            meer voedermiddelen. Per voedermiddel wordt een VWP Melk en VWP Vlees
+            berekend. Geef je ook een reële prijs in, dan wordt deze relatief vergeleken met de
+            VWP en in percentage uitgedrukt.
+        </p>
+    </div>
+
+    <div>
+        <p>
+            Voederwaardeprijzen (WUR)
+            Eens per vier weken berekent Wageningen Livestock Research de actuele
+            voederwaardeprijzen voor melkvee (VEM en DVE) en voor vleesvee (VEVI en DVE)
+            op basis van een reeks mengvoeders die in de praktijk worden gebruikt. De
+            energieprijs en de eiwittoeslagprijs voor voedermiddelen worden gebruikt bij de
+            vergelijking van prijzen van rundveevoeders met hun voederwaarde, waarbij de
+            aankoopprijs van een product wordt uitgedrukt als een percentage van de
+            voederwaardeprijs. In een tekortsituatie kunnen producten met een aankoop-
+            /voederwaardeprijs onder de 100% financieel aantrekkelijk zijn om aan te schaffen,
+            mits ze voedingstechnisch in het rantsoen passen.
+            <a href="{{ wur_url }}">Voederwaardeprijzen (WUR)</a>
+        </p>
+    </div>
+
+    <div>
+        <p>
+            Veevoedertabel (CVB)
+            In de CVB Veevoedertabel bundelt het CVB (Centraal Veevoeder Bureau) voor een
+            groot aantal grondstoffen de nutriëntwaarden, (berekende) verteringscoëfficiënten en
+            voederwaarden voor herkauwers, paarden, schapen, varkens, pluimvee en konijnen.
+            Aan de hand van deze gegevens kunnen rantsoenen voor bijvoorbeeld runderen
+            worden samengesteld, afgestemd op de behoefte normen van de dieren. Ook deze
+            behoeftenormen worden door het CVB bepaald en gebundeld aangeboden in het
+            <a href="{{ cvb_tabellenboek_url }}">Tabellenboek veevoeding Herkauwers {{ current_year }}</a>.
+            <br>
+            <a href="{{ cvb_table_url }}">CVB – Veevoedertabel</a>
+        </p>
+    </div>
+
+    <div style="margin-top:0.5rem;">
+        <img src="./assets/wageningen.svg" alt="WUR" style="height:40px; margin:0 10px;">
+        <img src="./assets/cvb.jpeg" alt="CVB" style="height:40px; margin:0 10px;">
+    </div>
+</footer>

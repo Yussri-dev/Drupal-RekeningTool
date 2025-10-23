@@ -2,10 +2,10 @@
 import exe from "@angablue/exe";
 
 await exe({
-    entry: "./dist/bundle.cjs",  // the working CommonJS file
+    entry: "./dist/bundle.cjs",
     out: "./dist/wur-scraper.exe",
     console: true,
-    skipBundle: true,            // don't re-bundle
+    skipBundle: true,            
     version: "1.0.0",
     properties: {
         ProductName: "WUR Scraper",
