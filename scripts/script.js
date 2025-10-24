@@ -21,12 +21,12 @@ async function loadWUR() {
 
     const select = document.getElementById("dateSelect");
 
-    const recentDates = dates.slice(-3);
+    const recentDates = dates.slice(-3).reverse();
     // Verschillende typen voor select
     const extra =
         [
-            "Jaargemiddelde (12 maanden)",
             "3-Maandsgemiddelde",
+            "Jaargemiddelde (12 maanden)",
             "3-jaarsgemiddelde"
         ];
     const displayDates = [...recentDates, ...extra];
@@ -35,7 +35,7 @@ async function loadWUR() {
         .map(d => `<option value="${d}">${d}</option>`)
         .join("");
 
-    const lastDate = recentDates.at(-1);
+    const lastDate = recentDates.at(0);
     select.value = lastDate;
 
     select.addEventListener("change", updateAllCalculations);
