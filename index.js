@@ -66,14 +66,19 @@ async function scrapeData() {
             headers.slice(1).forEach((date, idx) => {
                 let val = values[idx];
                 if (val === undefined) return;
+
                 if (val && /^[0-9]+,[0-9]+$/.test(val))
                     val = parseFloat(val.replace(",", "."));
-                else if (val && /^[0-9]+$/.test(val)) val = parseFloat(val);
+                else if (val && /^[0-9]+$/.test(val))
+                    val = parseFloat(val);
 
-                if (val !== null && result[key][date] !== val) {
-                    result[key][date] = val;
+                const normalizedDate = normalizeData(date);
+
+                if (val !== null && result[key][normalizedDate] !== val) {
+                    result[key][normalizedDate] = val;
                 }
             });
+
         });
 
         fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
@@ -85,6 +90,18 @@ async function scrapeData() {
     }
 }
 
+// when scrapping data i get some issues when data added to json the problem is sometime in wur reference they add data like 
+// 8-04-2025 or 08-4-2025 or 8-4-2025
+// so i added this function to normalize the date
+function normalizeData(dateStr) {
+    const dates = dateStr.split("-");
+    if (dates.length != 3) return dateStr;
+
+    const [day, month, year] = dates.map((p) => p.trim());
+    const d = day.padStart(2, "0");
+    const m = month.padStart(2, "0");
+    return `${d}-${m}-${year}`
+}
 scrapeData();
 
 // keep the process open briefly to show logs if double-clicked
