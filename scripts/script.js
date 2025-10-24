@@ -62,6 +62,20 @@ function last3MonthsAverage(obj) {
 }
 
 function threeYearAverage(obj) {
+    const vals = Object.values(obj)
+        .map(Number)
+        .filter(v => !isNaN(v))
+        .slice(-39);
+
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+}
+
+// BACKUP: Oude methode voor het berekenen van het 3-jaarsgemiddelde
+// Deze functie groepeerde per kalenderjaar en berekende het gemiddelde van de jaargemiddelden
+// Vervangen door een eenvoudigere methode (39 meest recente publicaties)
+
+/*
+function threeYearAverage(obj) {
     const entries = Object.entries(obj)
         .map(([key, val]) => {
             const [day, month, year] = key.split(/[-/]/).map(Number);
@@ -91,7 +105,7 @@ function threeYearAverage(obj) {
 
     return totalAvg;
 }
-
+*/
 function showWUR(date) {
     let kvem, dveMelk, kvevi, dveVlees;
 
