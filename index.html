@@ -45,12 +45,19 @@
 
     <div id="categoriesContainer"></div>
 
+    <!-- Buttons for Exports -->
+    <div id="exportButtons" style="text-align:center; margin-top: 2rem;">
+        <button id="exportExcelBtn" class="btn btn-success" style="margin-right:1rem;">Exporteren naar Excel</button>
+        <button id="exportPdfBtn" class="btn btn-danger">Exporteren naar PDF</button>
+    </div>
+
+
     <!-- 
         Let op – belangrijk:
         Ik heb het bestand 'footer-drupal.html.twig' aangemaakt voor de Drupal-versie.
         Zodra het project naar Drupal wordt overgezet, vervang deze sectie door de Twig-versie.
     -->
-        
+
     <!-- Start Static Section -->
     <footer style="text-align:center; font-size:0.8rem; margin-top:2rem;">
         <div>
@@ -103,6 +110,7 @@
         </div>
     </footer>
 
+    
     <script>
         const currentYear = new Date().getFullYear();
         const wurUrl = 'https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm';
@@ -118,6 +126,128 @@
     </script>
 
     <!-- End Static Section -->
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        // Export Data to Excel
+        document.getElementById("exportExcelBtn").addEventListener("click", function () {
+            const wb = XLSX.utils.book_new();
+            const tables = document.querySelectorAll("table");
+
+            tables.forEach((table, i) => {
+                const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
+                const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+                const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+                const filteredData = rows.map(row => {
+                    const tds = row.querySelectorAll("td");
+                    const productSelect = tds[0]?.querySelector("select");
+                    const priceInput = tds[1]?.querySelector("input");
+                    const product = productSelect ? productSelect.value : "";
+                    const price = priceInput ? priceInput.value : "";
+
+                    if (!price) return null;
+
+                    const vwpMelk = tds[2]?.innerText.trim();
+                    const vwpVlees = tds[3]?.innerText.trim();
+                    const ds = tds[4]?.innerText.trim();
+                    const dve = tds[5]?.innerText.trim();
+                    const vem = tds[6]?.innerText.trim();
+                    const vevi = tds[7]?.innerText.trim();
+                    const percMelk = tds[8]?.innerText.trim();
+                    const percVlees = tds[9]?.innerText.trim();
+
+                    return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
+                }).filter(Boolean);
+
+                if (filteredData.length > 0) {
+                    const wsData = [
+                        [`Categorie: ${cat}`],
+                        headers.slice(0, 10),
+                        ...filteredData
+                    ];
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
+                    XLSX.utils.book_append_sheet(wb, ws, cat.substring(0, 31));
+                }
+            });
+
+            if (wb.SheetNames.length === 0) {
+                alert("Geen gegevens met ingevulde prijzen gevonden!");
+                return;
+            }
+
+            XLSX.writeFile(wb, "Rekentool_Voederwaardeprijzen.xlsx");
+        });
+
+        // Export Data To Pdf
+        document.getElementById("exportPdfBtn").addEventListener("click", function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("l", "pt", "a4");
+            const selectedDate = document.getElementById("dateSelect")?.value || "";
+            doc.text(`Rekentool Voederwaardeprijs Rundvee – ${selectedDate}`, 40, 40);
+
+            const tables = document.querySelectorAll("table");
+            let startY = 60;
+            let dataFound = false;
+
+            tables.forEach((table, i) => {
+                const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
+                const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+                const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+                const filteredData = rows.map(row => {
+                    const tds = row.querySelectorAll("td");
+                    const productSelect = tds[0]?.querySelector("select");
+                    const priceInput = tds[1]?.querySelector("input");
+                    const product = productSelect ? productSelect.value : "";
+                    const price = priceInput ? priceInput.value : "";
+
+                    if (!price) return null;
+
+                    const vwpMelk = tds[2]?.innerText.trim();
+                    const vwpVlees = tds[3]?.innerText.trim();
+                    const ds = tds[4]?.innerText.trim();
+                    const dve = tds[5]?.innerText.trim();
+                    const vem = tds[6]?.innerText.trim();
+                    const vevi = tds[7]?.innerText.trim();
+                    const percMelk = tds[8]?.innerText.trim();
+                    const percVlees = tds[9]?.innerText.trim();
+
+                    return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
+                }).filter(Boolean);
+
+                if (filteredData.length > 0) {
+                    dataFound = true;
+                    doc.text(cat, 40, startY - 10);
+                    doc.autoTable({
+                        head: [headers.slice(0, 10)],
+                        body: filteredData,
+                        startY: startY,
+                        theme: "grid",
+                        styles: { fontSize: 8 },
+                        headStyles: { fillColor: [46, 125, 50] }
+                    });
+                    startY = doc.lastAutoTable.finalY + 25;
+
+                    if (startY > 500 && i < tables.length - 1) {
+                        doc.addPage();
+                        startY = 60;
+                    }
+                }
+            });
+
+            if (!dataFound) {
+                alert("Geen gegevens met ingevulde prijzen gevonden!");
+                return;
+            }
+
+            doc.save("Rekentool_Voederwaardeprijzen.pdf");
+        });
+    </script>
+
 
 </body>
 
