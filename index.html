@@ -110,7 +110,7 @@
         </div>
     </footer>
 
-    
+
     <script>
         const currentYear = new Date().getFullYear();
         const wurUrl = 'https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm';
@@ -132,7 +132,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <script>
-        // Export Data to Excel
+        function processFeedRow(row) {
+            const tds = row.querySelectorAll("td");
+            const productSelect = tds[0]?.querySelector("select");
+            const priceInput = tds[1]?.querySelector("input");
+
+            const product = productSelect ? productSelect.value : "";
+            const price = priceInput ? priceInput.value : "";
+
+            const vwpMelk = tds[2]?.innerText.trim();
+            const vwpVlees = tds[3]?.innerText.trim();
+            const ds = tds[4]?.innerText.trim();
+            let dve = tds[5]?.innerText.trim();
+            const vem = tds[6]?.innerText.trim();
+            const vevi = tds[7]?.innerText.trim();
+            const percMelk = tds[8]?.innerText.trim();
+            const percVlees = tds[9]?.innerText.trim();
+
+            const heeftAlleenDS = ds && !dve && !vem && !vevi;
+            if (heeftAlleenDS) return null;
+
+            if (!dve && (vem || vevi)) dve = "0";
+
+            return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
+        }
+
         document.getElementById("exportExcelBtn").addEventListener("click", function () {
             const wb = XLSX.utils.book_new();
             const tables = document.querySelectorAll("table");
@@ -142,26 +166,7 @@
                 const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
                 const rows = Array.from(table.querySelectorAll("tbody tr"));
 
-                const filteredData = rows.map(row => {
-                    const tds = row.querySelectorAll("td");
-                    const productSelect = tds[0]?.querySelector("select");
-                    const priceInput = tds[1]?.querySelector("input");
-                    const product = productSelect ? productSelect.value : "";
-                    const price = priceInput ? priceInput.value : "";
-
-                    if (!price) return null;
-
-                    const vwpMelk = tds[2]?.innerText.trim();
-                    const vwpVlees = tds[3]?.innerText.trim();
-                    const ds = tds[4]?.innerText.trim();
-                    const dve = tds[5]?.innerText.trim();
-                    const vem = tds[6]?.innerText.trim();
-                    const vevi = tds[7]?.innerText.trim();
-                    const percMelk = tds[8]?.innerText.trim();
-                    const percVlees = tds[9]?.innerText.trim();
-
-                    return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
-                }).filter(Boolean);
+                const filteredData = rows.map(processFeedRow).filter(r => r !== null);
 
                 if (filteredData.length > 0) {
                     const wsData = [
@@ -175,14 +180,13 @@
             });
 
             if (wb.SheetNames.length === 0) {
-                alert("Geen gegevens met ingevulde prijzen gevonden!");
+                alert("Geen geldige voedermiddelen gevonden om te exporteren!");
                 return;
             }
 
             XLSX.writeFile(wb, "Rekentool_Voederwaardeprijzen.xlsx");
         });
 
-        // Export Data To Pdf
         document.getElementById("exportPdfBtn").addEventListener("click", function () {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF("l", "pt", "a4");
@@ -198,38 +202,42 @@
                 const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
                 const rows = Array.from(table.querySelectorAll("tbody tr"));
 
-                const filteredData = rows.map(row => {
-                    const tds = row.querySelectorAll("td");
-                    const productSelect = tds[0]?.querySelector("select");
-                    const priceInput = tds[1]?.querySelector("input");
-                    const product = productSelect ? productSelect.value : "";
-                    const price = priceInput ? priceInput.value : "";
-
-                    if (!price) return null;
-
-                    const vwpMelk = tds[2]?.innerText.trim();
-                    const vwpVlees = tds[3]?.innerText.trim();
-                    const ds = tds[4]?.innerText.trim();
-                    const dve = tds[5]?.innerText.trim();
-                    const vem = tds[6]?.innerText.trim();
-                    const vevi = tds[7]?.innerText.trim();
-                    const percMelk = tds[8]?.innerText.trim();
-                    const percVlees = tds[9]?.innerText.trim();
-
-                    return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
-                }).filter(Boolean);
+                const filteredData = rows.map(processFeedRow).filter(r => r !== null);
 
                 if (filteredData.length > 0) {
                     dataFound = true;
                     doc.text(cat, 40, startY - 10);
+
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const leftMargin = 40;
+                    const rightMargin = 40;
+                    const availableWidth = pageWidth - leftMargin - rightMargin;
+
+                    const colCount = 10;
+                    const wideColWidth = availableWidth * 0.30;
+                    const remainingWidth = availableWidth - wideColWidth;
+                    const equalWidth = remainingWidth / (colCount - 1);
+
+                    const columnStyles = {};
+                    for (let c = 0; c < colCount; c++) {
+                        columnStyles[c] = {
+                            cellWidth: c === 0 ? wideColWidth : equalWidth,
+                            halign: c === 0 ? "left" : "center",
+                            valign: "middle"
+                        };
+                    }
+
                     doc.autoTable({
-                        head: [headers.slice(0, 10)],
+                        head: [headers.slice(0, colCount)],
                         body: filteredData,
                         startY: startY,
                         theme: "grid",
                         styles: { fontSize: 8 },
-                        headStyles: { fillColor: [46, 125, 50] }
+                        headStyles: { fillColor: [46, 125, 50], halign: "center" },
+                        columnStyles: columnStyles,
+                        tableWidth: 'auto',
                     });
+
                     startY = doc.lastAutoTable.finalY + 25;
 
                     if (startY > 500 && i < tables.length - 1) {
@@ -240,13 +248,14 @@
             });
 
             if (!dataFound) {
-                alert("Geen gegevens met ingevulde prijzen gevonden!");
+                alert("Geen geldige voedermiddelen gevonden om te exporteren!");
                 return;
             }
 
             doc.save("Rekentool_Voederwaardeprijzen.pdf");
         });
     </script>
+
 
 
 </body>
