@@ -5,8 +5,9 @@
     <meta charset="UTF-8" />
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm"></script>
-    <link rel="stylesheet" href="./Styles/style.css">
-    <script type="module" src="./scripts/script.js"></script>
+    <!-- each time is better to add a new version to avoid the problem with caching in browsers like firefox -->
+    <link rel="stylesheet" href="./Styles/style.css?v=1.0.1">
+    <script type="module" src="./scripts/script.js?v=1.0.1"></script>
 </head>
 
 <body>
@@ -110,21 +111,6 @@
         </div>
     </footer>
 
-
-    <script>
-        const currentYear = new Date().getFullYear();
-        const wurUrl = 'https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm';
-        const cvbTableUrl = 'https://www.cvbdiervoeding.nl/pagina/10081/downloads.aspx';
-        const cvbTabellenboekUrl = `https://www.cvbdiervoeding.nl/bestand/10942/tabellenboek-veevoeding-herkauwers-${currentYear}.pdf.ashx`;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('wurLink').href = wurUrl;
-            document.getElementById('cvbTableLink').href = cvbTableUrl;
-            document.getElementById('cvbTabellenboekLink').href = cvbTabellenboekUrl;
-            document.getElementById('currentYear').textContent = currentYear;
-        });
-    </script>
-
     <!-- End Static Section -->
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -132,6 +118,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <script>
+        const currentYear = new Date().getFullYear();
+        const wurUrl = 'https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm';
+        const cvbTableUrl = 'https://www.cvbdiervoeding.nl/pagina/10081/downloads.aspx';
+        const cvbTabellenboekUrl = `https://www.cvbdiervoeding.nl/bestand/10942/tabellenboek-veevoeding-herkauwers-${currentYear}.pdf.ashx`;
+
         function processFeedRow(row) {
             const tds = row.querySelectorAll("td");
             const productSelect = tds[0]?.querySelector("select");
@@ -157,106 +148,142 @@
             return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
         }
 
-        document.getElementById("exportExcelBtn").addEventListener("click", function () {
-            const wb = XLSX.utils.book_new();
-            const tables = document.querySelectorAll("table");
-
-            tables.forEach((table, i) => {
-                const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
-                const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-                const rows = Array.from(table.querySelectorAll("tbody tr"));
-
-                const filteredData = rows.map(processFeedRow).filter(r => r !== null);
-
-                if (filteredData.length > 0) {
-                    const wsData = [
-                        [`Categorie: ${cat}`],
-                        headers.slice(0, 10),
-                        ...filteredData
-                    ];
-                    const ws = XLSX.utils.aoa_to_sheet(wsData);
-                    XLSX.utils.book_append_sheet(wb, ws, cat.substring(0, 31));
-                }
-            });
-
-            if (wb.SheetNames.length === 0) {
-                alert("Geen geldige voedermiddelen gevonden om te exporteren!");
-                return;
+        // UN SEUL bloc DOMContentLoaded qui configure tout
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configuration des liens avec target="_blank"
+            const wurLink = document.getElementById('wurLink');
+            if (wurLink) {
+                wurLink.href = wurUrl;
+                wurLink.target = '_blank';
+                wurLink.rel = 'noopener noreferrer';
             }
 
-            XLSX.writeFile(wb, "Rekentool_Voederwaardeprijzen.xlsx");
-        });
+            const cvbTableLink = document.getElementById('cvbTableLink');
+            if (cvbTableLink) {
+                cvbTableLink.href = cvbTableUrl;
+                cvbTableLink.target = '_blank';
+                cvbTableLink.rel = 'noopener noreferrer';
+            }
 
-        document.getElementById("exportPdfBtn").addEventListener("click", function () {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF("l", "pt", "a4");
-            const selectedDate = document.getElementById("dateSelect")?.value || "";
-            doc.text(`Rekentool Voederwaardeprijs Rundvee – ${selectedDate}`, 40, 40);
+            const cvbTabellenboekLink = document.getElementById('cvbTabellenboekLink');
+            if (cvbTabellenboekLink) {
+                cvbTabellenboekLink.href = cvbTabellenboekUrl;
+                cvbTabellenboekLink.target = '_blank';
+                cvbTabellenboekLink.rel = 'noopener noreferrer';
+            }
 
-            const tables = document.querySelectorAll("table");
-            let startY = 60;
-            let dataFound = false;
+            const yearSpan = document.getElementById('currentYear');
+            if (yearSpan) {
+                yearSpan.textContent = currentYear;
+            }
 
-            tables.forEach((table, i) => {
-                const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
-                const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-                const rows = Array.from(table.querySelectorAll("tbody tr"));
+            // Export Excel
+            const exportExcelBtn = document.getElementById("exportExcelBtn");
+            if (exportExcelBtn) {
+                exportExcelBtn.addEventListener("click", function () {
+                    const wb = XLSX.utils.book_new();
+                    const tables = document.querySelectorAll("table");
 
-                const filteredData = rows.map(processFeedRow).filter(r => r !== null);
+                    tables.forEach((table, i) => {
+                        const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
+                        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+                        const rows = Array.from(table.querySelectorAll("tbody tr"));
 
-                if (filteredData.length > 0) {
-                    dataFound = true;
-                    doc.text(cat, 40, startY - 10);
+                        const filteredData = rows.map(processFeedRow).filter(r => r !== null);
 
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const leftMargin = 40;
-                    const rightMargin = 40;
-                    const availableWidth = pageWidth - leftMargin - rightMargin;
-
-                    const colCount = 10;
-                    const wideColWidth = availableWidth * 0.30;
-                    const remainingWidth = availableWidth - wideColWidth;
-                    const equalWidth = remainingWidth / (colCount - 1);
-
-                    const columnStyles = {};
-                    for (let c = 0; c < colCount; c++) {
-                        columnStyles[c] = {
-                            cellWidth: c === 0 ? wideColWidth : equalWidth,
-                            halign: c === 0 ? "left" : "center",
-                            valign: "middle"
-                        };
-                    }
-
-                    doc.autoTable({
-                        head: [headers.slice(0, colCount)],
-                        body: filteredData,
-                        startY: startY,
-                        theme: "grid",
-                        styles: { fontSize: 8 },
-                        headStyles: { fillColor: [46, 125, 50], halign: "center" },
-                        columnStyles: columnStyles,
-                        tableWidth: 'auto',
+                        if (filteredData.length > 0) {
+                            const wsData = [
+                                [`Categorie: ${cat}`],
+                                headers.slice(0, 10),
+                                ...filteredData
+                            ];
+                            const ws = XLSX.utils.aoa_to_sheet(wsData);
+                            XLSX.utils.book_append_sheet(wb, ws, cat.substring(0, 31));
+                        }
                     });
 
-                    startY = doc.lastAutoTable.finalY + 25;
-
-                    if (startY > 500 && i < tables.length - 1) {
-                        doc.addPage();
-                        startY = 60;
+                    if (wb.SheetNames.length === 0) {
+                        alert("Geen geldige voedermiddelen gevonden om te exporteren!");
+                        return;
                     }
-                }
-            });
 
-            if (!dataFound) {
-                alert("Geen geldige voedermiddelen gevonden om te exporteren!");
-                return;
+                    XLSX.writeFile(wb, "Rekentool_Voederwaardeprijzen.xlsx");
+                });
             }
 
-            doc.save("Rekentool_Voederwaardeprijzen.pdf");
+            // Export PDF
+            const exportPdfBtn = document.getElementById("exportPdfBtn");
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener("click", function () {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF("l", "pt", "a4");
+                    const selectedDate = document.getElementById("dateSelect")?.value || "";
+                    doc.text(`Rekentool Voederwaardeprijs Rundvee – ${selectedDate}`, 40, 40);
+
+                    const tables = document.querySelectorAll("table");
+                    let startY = 60;
+                    let dataFound = false;
+
+                    tables.forEach((table, i) => {
+                        const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
+                        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+                        const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+                        const filteredData = rows.map(processFeedRow).filter(r => r !== null);
+
+                        if (filteredData.length > 0) {
+                            dataFound = true;
+                            doc.text(cat, 40, startY - 10);
+
+                            const pageWidth = doc.internal.pageSize.getWidth();
+                            const leftMargin = 40;
+                            const rightMargin = 40;
+                            const availableWidth = pageWidth - leftMargin - rightMargin;
+
+                            const colCount = 10;
+                            const wideColWidth = availableWidth * 0.30;
+                            const remainingWidth = availableWidth - wideColWidth;
+                            const equalWidth = remainingWidth / (colCount - 1);
+
+                            const columnStyles = {};
+                            for (let c = 0; c < colCount; c++) {
+                                columnStyles[c] = {
+                                    cellWidth: c === 0 ? wideColWidth : equalWidth,
+                                    halign: c === 0 ? "left" : "center",
+                                    valign: "middle"
+                                };
+                            }
+
+                            doc.autoTable({
+                                head: [headers.slice(0, colCount)],
+                                body: filteredData,
+                                startY: startY,
+                                theme: "grid",
+                                styles: { fontSize: 8 },
+                                headStyles: { fillColor: [46, 125, 50], halign: "center" },
+                                columnStyles: columnStyles,
+                                tableWidth: 'auto',
+                            });
+
+                            startY = doc.lastAutoTable.finalY + 25;
+
+                            if (startY > 500 && i < tables.length - 1) {
+                                doc.addPage();
+                                startY = 60;
+                            }
+                        }
+                    });
+
+                    if (!dataFound) {
+                        alert("Geen geldige voedermiddelen gevonden om te exporteren!");
+                        return;
+                    }
+
+                    doc.save("Rekentool_Voederwaardeprijzen.pdf");
+                });
+            }
         });
     </script>
-
-
 
 </body>
 
