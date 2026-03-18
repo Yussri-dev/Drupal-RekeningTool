@@ -5,9 +5,8 @@
     <meta charset="UTF-8" />
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm"></script>
-    <!-- each time is better to add a new version to avoid the problem with caching in browsers like firefox -->
-    <link rel="stylesheet" href="./Styles/style.css?v=1.0.1">
-    <script type="module" src="./scripts/script.js?v=1.0.1"></script>
+    <link rel="stylesheet" href="./Styles/style.css?v=1.0.3">
+    <script type="module" src="./scripts/script.js?v=1.0.3"></script>
 </head>
 
 <body>
@@ -85,7 +84,9 @@
                 voederwaardeprijs. In een tekortsituatie kunnen producten met een aankoop-
                 /voederwaardeprijs onder de 100% financieel aantrekkelijk zijn om aan te schaffen,
                 mits ze voedingstechnisch in het rantsoen passen.
-                <a id="wurLink" href="#">Voederwaardeprijzen (WUR)</a>
+                <a href="https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm"
+                    target="_blank" rel="noopener noreferrer"
+                    onclick="window.open(this.href, '_blank'); return false;">Voederwaardeprijzen (WUR)</a>
             </p>
         </div>
 
@@ -98,10 +99,12 @@
                 Aan de hand van deze gegevens kunnen rantsoenen voor bijvoorbeeld runderen
                 worden samengesteld, afgestemd op de behoefte normen van de dieren. Ook deze
                 behoeftenormen worden door het CVB bepaald en gebundeld aangeboden in het
-                <a id="cvbTabellenboekLink" href="#">Tabellenboek veevoeding Herkauwers <span
+                <a id="cvbTabellenboekLink" target="_blank" href="#">Tabellenboek veevoeding Herkauwers <span
                         id="currentYear"></span></a>.
                 <br>
-                <a id="cvbTableLink" href="#">CVB – Veevoedertabel</a>
+                <a href="https://www.cvbdiervoeding.nl/pagina/10081/downloads.aspx" target="_blank"
+                    rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;">CVB –
+                    Veevoedertabel</a>
             </p>
         </div>
 
@@ -111,6 +114,17 @@
         </div>
     </footer>
 
+
+    <script>
+        const currentYear = new Date().getFullYear();
+        const cvbTabellenboekUrl = `https://www.cvbdiervoeding.nl/bestand/10942/tabellenboek-veevoeding-herkauwers-${currentYear}.pdf.ashx`;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentYear').textContent = currentYear;
+            document.getElementById('cvbTabellenboekLink').href = cvbTabellenboekUrl;
+        });
+    </script>
+
     <!-- End Static Section -->
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -118,172 +132,149 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <script>
-        const currentYear = new Date().getFullYear();
-        const wurUrl = 'https://www.wur.nl/nl/onderzoek-resultaten/onderzoeksinstituten/livestock-research/producten/voederwaardeprijzen-rundvee.htm';
-        const cvbTableUrl = 'https://www.cvbdiervoeding.nl/pagina/10081/downloads.aspx';
-        const cvbTabellenboekUrl = `https://www.cvbdiervoeding.nl/bestand/10942/tabellenboek-veevoeding-herkauwers-${currentYear}.pdf.ashx`;
-
         function processFeedRow(row) {
             const tds = row.querySelectorAll("td");
+
             const productSelect = tds[0]?.querySelector("select");
+            const productInput = tds[0]?.querySelector("input");
             const priceInput = tds[1]?.querySelector("input");
 
-            const product = productSelect ? productSelect.value : "";
-            const price = priceInput ? priceInput.value : "";
+            const dsInput = tds[4]?.querySelector("input");
+            const dveInput = tds[5]?.querySelector("input");
+            const vemInput = tds[6]?.querySelector("input");
+            const veviInput = tds[7]?.querySelector("input");
 
-            const vwpMelk = tds[2]?.innerText.trim();
-            const vwpVlees = tds[3]?.innerText.trim();
-            const ds = tds[4]?.innerText.trim();
-            let dve = tds[5]?.innerText.trim();
-            const vem = tds[6]?.innerText.trim();
-            const vevi = tds[7]?.innerText.trim();
-            const percMelk = tds[8]?.innerText.trim();
-            const percVlees = tds[9]?.innerText.trim();
+            const product = productSelect
+                ? productSelect.value.trim()
+                : (productInput ? productInput.value.trim() : "");
+
+            const price = priceInput ? priceInput.value.trim() : "";
+
+            const vwpMelk = tds[2]?.innerText.trim() || "";
+            const vwpVlees = tds[3]?.innerText.trim() || "";
+
+            const ds = dsInput ? dsInput.value.trim() : (tds[4]?.innerText.trim() || "");
+            let dve = dveInput ? dveInput.value.trim() : (tds[5]?.innerText.trim() || "");
+            const vem = vemInput ? vemInput.value.trim() : (tds[6]?.innerText.trim() || "");
+            const vevi = veviInput ? veviInput.value.trim() : (tds[7]?.innerText.trim() || "");
+
+            const percMelk = tds[8]?.innerText.trim() || "";
+            const percVlees = tds[9]?.innerText.trim() || "";
 
             const heeftAlleenDS = ds && !dve && !vem && !vevi;
             if (heeftAlleenDS) return null;
 
             if (!dve && (vem || vevi)) dve = "0";
 
+            const emptyRow =
+                !product && !price && !vwpMelk && !vwpVlees &&
+                !ds && !dve && !vem && !vevi && !percMelk && !percVlees;
+
+            if (emptyRow) return null;
+
             return [product, price, vwpMelk, vwpVlees, ds, dve, vem, vevi, percMelk, percVlees];
         }
 
-        // UN SEUL bloc DOMContentLoaded qui configure tout
-        document.addEventListener('DOMContentLoaded', () => {
-            // Configuration des liens avec target="_blank"
-            const wurLink = document.getElementById('wurLink');
-            if (wurLink) {
-                wurLink.href = wurUrl;
-                wurLink.target = '_blank';
-                wurLink.rel = 'noopener noreferrer';
+        document.getElementById("exportExcelBtn").addEventListener("click", function () {
+            const wb = XLSX.utils.book_new();
+            const tables = document.querySelectorAll("table");
+
+            tables.forEach((table, i) => {
+                const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
+                const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+                const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+                const filteredData = rows.map(processFeedRow).filter(r => r !== null);
+
+                if (filteredData.length > 0) {
+                    const wsData = [
+                        [`Categorie: ${cat}`],
+                        headers.slice(0, 10),
+                        ...filteredData
+                    ];
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
+                    XLSX.utils.book_append_sheet(wb, ws, cat.substring(0, 31));
+                }
+            });
+
+            if (wb.SheetNames.length === 0) {
+                alert("Geen geldige voedermiddelen gevonden om te exporteren!");
+                return;
             }
 
-            const cvbTableLink = document.getElementById('cvbTableLink');
-            if (cvbTableLink) {
-                cvbTableLink.href = cvbTableUrl;
-                cvbTableLink.target = '_blank';
-                cvbTableLink.rel = 'noopener noreferrer';
-            }
+            XLSX.writeFile(wb, "Rekentool_Voederwaardeprijzen.xlsx");
+        });
 
-            const cvbTabellenboekLink = document.getElementById('cvbTabellenboekLink');
-            if (cvbTabellenboekLink) {
-                cvbTabellenboekLink.href = cvbTabellenboekUrl;
-                cvbTabellenboekLink.target = '_blank';
-                cvbTabellenboekLink.rel = 'noopener noreferrer';
-            }
+        document.getElementById("exportPdfBtn").addEventListener("click", function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("l", "pt", "a4");
+            const selectedDate = document.getElementById("dateSelect")?.value || "";
+            doc.text(`Rekentool Voederwaardeprijs Rundvee – ${selectedDate}`, 40, 40);
 
-            const yearSpan = document.getElementById('currentYear');
-            if (yearSpan) {
-                yearSpan.textContent = currentYear;
-            }
+            const tables = document.querySelectorAll("table");
+            let startY = 60;
+            let dataFound = false;
 
-            // Export Excel
-            const exportExcelBtn = document.getElementById("exportExcelBtn");
-            if (exportExcelBtn) {
-                exportExcelBtn.addEventListener("click", function () {
-                    const wb = XLSX.utils.book_new();
-                    const tables = document.querySelectorAll("table");
+            tables.forEach((table, i) => {
+                const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
+                const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+                const rows = Array.from(table.querySelectorAll("tbody tr"));
 
-                    tables.forEach((table, i) => {
-                        const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
-                        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-                        const rows = Array.from(table.querySelectorAll("tbody tr"));
+                const filteredData = rows.map(processFeedRow).filter(r => r !== null);
 
-                        const filteredData = rows.map(processFeedRow).filter(r => r !== null);
+                if (filteredData.length > 0) {
+                    dataFound = true;
+                    doc.text(cat, 40, startY - 10);
 
-                        if (filteredData.length > 0) {
-                            const wsData = [
-                                [`Categorie: ${cat}`],
-                                headers.slice(0, 10),
-                                ...filteredData
-                            ];
-                            const ws = XLSX.utils.aoa_to_sheet(wsData);
-                            XLSX.utils.book_append_sheet(wb, ws, cat.substring(0, 31));
-                        }
-                    });
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const leftMargin = 40;
+                    const rightMargin = 40;
+                    const availableWidth = pageWidth - leftMargin - rightMargin;
 
-                    if (wb.SheetNames.length === 0) {
-                        alert("Geen geldige voedermiddelen gevonden om te exporteren!");
-                        return;
+                    const colCount = 10;
+                    const wideColWidth = availableWidth * 0.30;
+                    const remainingWidth = availableWidth - wideColWidth;
+                    const equalWidth = remainingWidth / (colCount - 1);
+
+                    const columnStyles = {};
+                    for (let c = 0; c < colCount; c++) {
+                        columnStyles[c] = {
+                            cellWidth: c === 0 ? wideColWidth : equalWidth,
+                            halign: c === 0 ? "left" : "center",
+                            valign: "middle"
+                        };
                     }
 
-                    XLSX.writeFile(wb, "Rekentool_Voederwaardeprijzen.xlsx");
-                });
-            }
-
-            // Export PDF
-            const exportPdfBtn = document.getElementById("exportPdfBtn");
-            if (exportPdfBtn) {
-                exportPdfBtn.addEventListener("click", function () {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF("l", "pt", "a4");
-                    const selectedDate = document.getElementById("dateSelect")?.value || "";
-                    doc.text(`Rekentool Voederwaardeprijs Rundvee – ${selectedDate}`, 40, 40);
-
-                    const tables = document.querySelectorAll("table");
-                    let startY = 60;
-                    let dataFound = false;
-
-                    tables.forEach((table, i) => {
-                        const cat = table.closest(".category-section")?.querySelector(".category-header")?.textContent || `Categorie ${i + 1}`;
-                        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-                        const rows = Array.from(table.querySelectorAll("tbody tr"));
-
-                        const filteredData = rows.map(processFeedRow).filter(r => r !== null);
-
-                        if (filteredData.length > 0) {
-                            dataFound = true;
-                            doc.text(cat, 40, startY - 10);
-
-                            const pageWidth = doc.internal.pageSize.getWidth();
-                            const leftMargin = 40;
-                            const rightMargin = 40;
-                            const availableWidth = pageWidth - leftMargin - rightMargin;
-
-                            const colCount = 10;
-                            const wideColWidth = availableWidth * 0.30;
-                            const remainingWidth = availableWidth - wideColWidth;
-                            const equalWidth = remainingWidth / (colCount - 1);
-
-                            const columnStyles = {};
-                            for (let c = 0; c < colCount; c++) {
-                                columnStyles[c] = {
-                                    cellWidth: c === 0 ? wideColWidth : equalWidth,
-                                    halign: c === 0 ? "left" : "center",
-                                    valign: "middle"
-                                };
-                            }
-
-                            doc.autoTable({
-                                head: [headers.slice(0, colCount)],
-                                body: filteredData,
-                                startY: startY,
-                                theme: "grid",
-                                styles: { fontSize: 8 },
-                                headStyles: { fillColor: [46, 125, 50], halign: "center" },
-                                columnStyles: columnStyles,
-                                tableWidth: 'auto',
-                            });
-
-                            startY = doc.lastAutoTable.finalY + 25;
-
-                            if (startY > 500 && i < tables.length - 1) {
-                                doc.addPage();
-                                startY = 60;
-                            }
-                        }
+                    doc.autoTable({
+                        head: [headers.slice(0, colCount)],
+                        body: filteredData,
+                        startY: startY,
+                        theme: "grid",
+                        styles: { fontSize: 8 },
+                        headStyles: { fillColor: [46, 125, 50], halign: "center" },
+                        columnStyles: columnStyles,
+                        tableWidth: 'auto',
                     });
 
-                    if (!dataFound) {
-                        alert("Geen geldige voedermiddelen gevonden om te exporteren!");
-                        return;
-                    }
+                    startY = doc.lastAutoTable.finalY + 25;
 
-                    doc.save("Rekentool_Voederwaardeprijzen.pdf");
-                });
+                    if (startY > 500 && i < tables.length - 1) {
+                        doc.addPage();
+                        startY = 60;
+                    }
+                }
+            });
+
+            if (!dataFound) {
+                alert("Geen geldige voedermiddelen gevonden om te exporteren!");
+                return;
             }
+
+            doc.save("Rekentool_Voederwaardeprijzen.pdf");
         });
     </script>
+
+
 
 </body>
 

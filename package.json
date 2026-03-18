@@ -1,6 +1,7 @@
 {
-  "name": "drupal-rekeningtool",
+  "name": "rundveeloket",
   "version": "1.0.0",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "bundle": "esbuild index.js --bundle --platform=node --target=node22 --format=cjs --outfile=dist/bundle.cjs",
