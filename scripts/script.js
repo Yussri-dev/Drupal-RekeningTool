@@ -235,13 +235,13 @@ function addProductRow(category, tbody) {
     priceCell.appendChild(priceInput);
 
     const ds = document.createElement("td");
-    ds.setAttribute("data-label", "DS");
+    ds.setAttribute("data-label", "DS (g/kg)");
     const dve = document.createElement("td");
-    dve.setAttribute("data-label", "DVE");
+    dve.setAttribute("data-label", "DVE (g/kg DS)");
     const vem = document.createElement("td");
-    vem.setAttribute("data-label", "VEM");
+    vem.setAttribute("data-label", "VEM (/kg DS)");
     const vevi = document.createElement("td");
-    vevi.setAttribute("data-label", "VEVI");
+    vevi.setAttribute("data-label", "VEVI (/kg DS)");
     const melk = document.createElement("td");
     melk.setAttribute("data-label", "VWP Melk");
     melk.classList.add("vwp-column");
@@ -374,10 +374,10 @@ function addEigenProductRow(tbody) {
 
     const productCellObj = makeInputCell("text", "Naam product", "Product");
     const priceCellObj = makeInputCell("number", "€", "Reële prijs (€/ton)", "1");
-    const dsCellObj = makeInputCell("number", "DS", "DS", "1");
-    const dveCellObj = makeInputCell("number", "DVE", "DVE", "1");
-    const vemCellObj = makeInputCell("number", "VEM", "VEM", "1");
-    const veviCellObj = makeInputCell("number", "VEVI", "VEVI", "1");
+    const dsCellObj = makeInputCell("number", "DS", "DS (g/kg)", "1");
+    const dveCellObj = makeInputCell("number", "DVE", "DVE (g/kg DS)", "1");
+    const vemCellObj = makeInputCell("number", "VEM", "VEM (/kg DS)", "1");
+    const veviCellObj = makeInputCell("number", "VEVI", "VEVI (/kg DS)", "1");
 
     const melk = document.createElement("td");
     melk.setAttribute("data-label", "VWP Melk");
