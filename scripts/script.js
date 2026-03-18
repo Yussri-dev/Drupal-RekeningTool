@@ -525,10 +525,10 @@ function buildEigenVoedermiddelenSection() {
                 <th>Reële prijs (€/ton)</th>
                 <th>VWP Melk</th>
                 <th>VWP Vlees</th>
-                <th>DS</th>
-                <th>DVE</th>
-                <th>VEM</th>
-                <th>VEVI</th>
+                <th>DS (g/kg)</th>
+                <th>DVE (g/kg DS)</th>
+                <th>VEM (/kg DS)</th>
+                <th>VEVI (/kg DS)</th>
                 <th>Prijs/VWP Melk (%)</th>
                 <th>Prijs/VWP Vlees (%)</th>
                 <th></th>
@@ -542,11 +542,11 @@ function buildEigenVoedermiddelenSection() {
     const btnAdd = document.createElement("button");
     btnAdd.textContent = "(+) Voeg een product toe";
     btnAdd.className = "add-btn";
-    btnAdd.onclick = () =>{
+    btnAdd.onclick = () => {
         addEigenProductRow(tbody);
     };
 
-    section.append(header,table,btnAdd);
+    section.append(header, table, btnAdd);
     document.getElementById("categoriesContainer").appendChild(section);
 }
 
